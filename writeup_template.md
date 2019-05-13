@@ -200,7 +200,7 @@ Here is a visualization of the architecture
 
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
 
-![alt text][image3]
+
 
 I added data of left and right camera angle with tweaking sterring measurement
 
