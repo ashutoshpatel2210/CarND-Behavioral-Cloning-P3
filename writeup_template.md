@@ -1,9 +1,4 @@
 # **Behavioral Cloning** 
-
-## Writeup Template
-
-### You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
 **Behavioral Cloning Project**
@@ -150,7 +145,7 @@ Epoch 9/10
 Epoch 10/10
 300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
 ```
-![alt text][image1]
+
 
 The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track, to improve the driving behavior in these cases, I updated drive.py to use similar image processing pipeline (line 52-58, drive.py)
 
@@ -199,8 +194,6 @@ Here is a visualization of the architecture
 #### 3. Creation of the Training Set & Training Process
 
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
-
-
 
 I added data of left and right camera angle with tweaking sterring measurement
 
@@ -256,3 +249,5 @@ Epoch 9/10
 Epoch 10/10
 300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
 ```
+
+![alt text][image1]
