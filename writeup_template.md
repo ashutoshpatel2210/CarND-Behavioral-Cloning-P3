@@ -150,7 +150,7 @@ Epoch 9/10
 Epoch 10/10
 300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
 ```
-![alt text][image1]
+
 
 The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track, to improve the driving behavior in these cases, I updated drive.py to use similar image processing pipeline (line 52-58, drive.py)
 
@@ -256,3 +256,4 @@ Epoch 9/10
 Epoch 10/10
 300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
 ```
+![alt text][image1]
