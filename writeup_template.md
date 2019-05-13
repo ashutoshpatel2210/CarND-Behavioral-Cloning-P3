@@ -18,13 +18,15 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/placeholder.png "Model Visualization"
-[image2]: ./examples/placeholder.png "Grayscaling"
-[image3]: ./examples/placeholder_small.png "Recovery Image"
-[image4]: ./examples/placeholder_small.png "Recovery Image"
-[image5]: ./examples/placeholder_small.png "Recovery Image"
-[image6]: ./examples/placeholder_small.png "Normal Image"
-[image7]: ./examples/placeholder_small.png "Flipped Image"
+[image1]: ./examples/visualizing_loss.png "Visualizing loss"
+[image2]: ./examples/Model.svg "Model Visualization"
+[image3]: ./examples/center_2016_12_01_13_41_15_584.jpg "Center Camera Image"
+[image4]: ./examples/left_2016_12_01_13_41_15_584.jpg "Left Camera Image"
+[image5]: ./examples/right_2016_12_01_13_41_15_584.jpg "Right Camera Image"
+[image6]: ./examples/original2043.jpg "Original Image"
+[image7]: ./examples/2043.jpg "Flipped Image"
+[image8]: ./examples/original9907.jpg "Original Image"
+[image9]: ./examples/9907.jpg "Flipped Image"
 
 ---
 ### Files Submitted & Code Quality
@@ -102,7 +104,7 @@ def training_images(image, steering):
 ```
 #### 3. Model parameter tuning
 
-The model used an adam optimizer with learning rate 0.0001, so the learning rate was reduce from 0.001 t0 0.0001 to reduce loss. (model.py line 116).
+The model used an adam optimizer with learning rate 0.0001, so the learning rate was reduce from 0.001 to 0.0001 to reduce loss. (model.py line 116).
 
 #### 4. Appropriate training data
 
@@ -114,52 +116,143 @@ For details about how I created the training data, see the next section.
 
 #### 1. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+The overall strategy for deriving a model architecture was to use transfer learning from Nvidia Behavioural model. 
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+My first step was to use a convolution neural network model similar to the Nvidia model. I thought this model might be appropriate because Nvidia model is already proven model for similar project. So I tried with Nvidia model directly on this project. 
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+##### Data selection and Augmentation
+In order to gauge how well the model was working, I split my image and steering angle data into a training(80%) and validation set(20%). I found that my first model had a high mean squared error on the training set but a low mean squared error on the validation set.  I already added dropout after I trained model with only center images first. To avoid high traning loss(~0.500), i added images from left and right camera and logic to flip 50% of images randomly by cv2.flip() function. Number of images in the data/ folder are in the rangle ~20000. 
 
-To combat the overfitting, I modified the model so that ...
+##### Activation function changed from relu to elu 
 
-Then I ... 
+Steering angle(output) consists of positive and negative numbers. So i decided to use ELU function instead of RELU. RELU which works well for > 0 numbers while ELU provides smooth output for negative numbers. It combines advantages of RELU and Leaky RELU. 
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+After above changes, 
+```
+Epoch 1/10
+300/300 [==============================] - 173s 577ms/step - loss: 0.0322 - val_loss: 0.0250
+Epoch 2/10
+300/300 [==============================] - 165s 549ms/step - loss: 0.0224 - val_loss: 0.0209
+Epoch 3/10
+300/300 [==============================] - 164s 547ms/step - loss: 0.0210 - val_loss: 0.0210
+Epoch 4/10
+300/300 [==============================] - 164s 548ms/step - loss: 0.0204 - val_loss: 0.0202
+Epoch 5/10
+300/300 [==============================] - 165s 550ms/step - loss: 0.0196 - val_loss: 0.0194
+Epoch 6/10
+300/300 [==============================] - 165s 550ms/step - loss: 0.0195 - val_loss: 0.0191
+Epoch 7/10
+300/300 [==============================] - 164s 547ms/step - loss: 0.0185 - val_loss: 0.0197
+Epoch 8/10
+300/300 [==============================] - 165s 548ms/step - loss: 0.0183 - val_loss: 0.0183
+Epoch 9/10
+300/300 [==============================] - 165s 548ms/step - loss: 0.0173 - val_loss: 0.0183
+Epoch 10/10
+300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
+```
+![alt text][image1]
+
+The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track, to improve the driving behavior in these cases, I updated drive.py to use similar image processing pipeline (line 52-58, drive.py)
 
 At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
 
 #### 2. Final Model Architecture
 
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
+The final model architecture (model.py lines lines 89-120) consisted of a convolution neural network with the following layers and layer sizes
 
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
+```
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+conv2d_1 (Conv2D)            (None, 31, 98, 24)        1824      
+_________________________________________________________________
+conv2d_2 (Conv2D)            (None, 14, 47, 36)        21636     
+_________________________________________________________________
+conv2d_3 (Conv2D)            (None, 5, 22, 48)         43248     
+_________________________________________________________________
+conv2d_4 (Conv2D)            (None, 3, 20, 64)         27712     
+_________________________________________________________________
+conv2d_5 (Conv2D)            (None, 1, 18, 64)         36928     
+_________________________________________________________________
+flatten_1 (Flatten)          (None, 1152)              0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 100)               115300    
+_________________________________________________________________
+dense_2 (Dense)              (None, 50)                5050      
+_________________________________________________________________
+dense_3 (Dense)              (None, 10)                510       
+_________________________________________________________________
+dense_4 (Dense)              (None, 1)                 11        
+=================================================================
+Total params: 252,219
+Trainable params: 252,219
+Non-trainable params: 0
+_________________________________________________________________
 
-![alt text][image1]
+```
+
+
+Here is a visualization of the architecture 
+
+![alt text][image2]
 
 #### 3. Creation of the Training Set & Training Process
 
 To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
 
-![alt text][image2]
+![alt text][image3]
 
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+I added data of left and right camera angle with tweaking sterring measurement
 
 ![alt text][image3]
 ![alt text][image4]
 ![alt text][image5]
 
-Then I repeated this process on track two in order to get more data points.
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+After the collection process, I had ~20000 number of data points. 
+To augment the data sat, I also flipped images and angles thinking that this would help to recude training loss For example, here is an image that has then been flipped:
 
 ![alt text][image6]
 ![alt text][image7]
 
-Etc ....
 
-After the collection process, I had X number of data points. I then preprocessed this data by ...
+![alt text][image8]
+![alt text][image9]
 
+I then preprocessed this data by 
+```python
+def img_preprocess(img):
+        img = img[60:135,:,:]
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
+        img = cv2.GaussianBlur(img,  (5, 5), 0)
+        img = cv2.resize(img, (200, 66))
+        img = img/255
+        return img
+```
 
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
+I finally randomly shuffled the data set and put randomly chosed 50% of the data while generating batches into a training set. 
 
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was 10 as evidenced by below. I used an adam optimizer so that manually training the learning rate wasn't necessary.
+
+```
+Epoch 1/10
+300/300 [==============================] - 173s 577ms/step - loss: 0.0322 - val_loss: 0.0250
+Epoch 2/10
+300/300 [==============================] - 165s 549ms/step - loss: 0.0224 - val_loss: 0.0209
+Epoch 3/10
+300/300 [==============================] - 164s 547ms/step - loss: 0.0210 - val_loss: 0.0210
+Epoch 4/10
+300/300 [==============================] - 164s 548ms/step - loss: 0.0204 - val_loss: 0.0202
+Epoch 5/10
+300/300 [==============================] - 165s 550ms/step - loss: 0.0196 - val_loss: 0.0194
+Epoch 6/10
+300/300 [==============================] - 165s 550ms/step - loss: 0.0195 - val_loss: 0.0191
+Epoch 7/10
+300/300 [==============================] - 164s 547ms/step - loss: 0.0185 - val_loss: 0.0197
+Epoch 8/10
+300/300 [==============================] - 165s 548ms/step - loss: 0.0183 - val_loss: 0.0183
+Epoch 9/10
+300/300 [==============================] - 165s 548ms/step - loss: 0.0173 - val_loss: 0.0183
+Epoch 10/10
+300/300 [==============================] - 164s 548ms/step - loss: 0.0169 - val_loss: 0.0176
+```
