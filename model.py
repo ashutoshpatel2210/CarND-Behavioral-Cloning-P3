@@ -8,7 +8,7 @@ import sklearn
 from keras.models import Sequential, Model
 from keras.layers import Lambda
 from keras.optimizers import Adam
-from keras.layers import Convolution2D, Cropping2D, MaxPooling2D, Dropout, Flatten, Dense
+from keras.layers import Conv2D, Cropping2D, Dropout, Flatten, Dense
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 from imgaug import augmenters as iaa
@@ -78,19 +78,9 @@ def img_preprocess(img):
 Apply data augmentation technique to training data
 '''
 def training_images(image, steering):
-    random_number = np.random.rand()
-    if random_number < 0.20:
-        brightness = iaa.Multiply((0.2, 1.2))
-        image = brightness.augment_image(image)
-    elif random_number > 0.20 and random_number < 0.40:
-        zoom = iaa.Affine(scale=(1, 1.3))
-        image = zoom.augment_image(image)
-    elif random_number > 0.40 and random_number < 0.60:
-        pan = iaa.Affine(translate_percent= {"x" : (-0.1, 0.1), "y": (-0.1, 0.1)})
-        image = pan.augment_image(image)
-    else:
-        image = cv2.flip(image,1)
-        steering = -steering 
+    #Flip remaining 50% of images
+    image = cv2.flip(image, 1)
+    steering = -steering 
     return image, steering
 
 '''
@@ -99,16 +89,16 @@ Nvidia model of behavior cloning
 def behavior_model():
     model=Sequential()
     #Convolution layer for Input size = 66x200x3 , Filters=24,  5x5 kernel filter size, activation ='elu'
-    model.add(Convolution2D(24, 5, 5, subsample=(2, 2), input_shape=(66, 200, 3), activation='elu'))
+    model.add(Conv2D(24, (5, 5), activation="elu", strides=(2, 2), input_shape=(66, 200, 3)))
     #Convolution layer for Filters=36,  5x5 kernel filter size, activation ='elu'
-    model.add(Convolution2D(36, 5, 5, subsample=(2, 2), activation='elu'))
+    model.add(Conv2D(36, (5, 5), activation="elu", strides=(2, 2)))
     #Convolution layer for Filters=48,  5x5 kernel filter size, activation ='elu'
-    model.add(Convolution2D(48, 5, 5, subsample=(2, 2), activation='elu'))
+    model.add(Conv2D(48, (5, 5), activation="elu", strides=(2, 2)))
     #Convolution layer for Filters=68,  3x3 kernel filter size, activation ='elu'
-    model.add(Convolution2D(64, 3, 3, activation='elu'))
+    model.add(Conv2D(64, (3, 3), activation="elu"))
     #Convolution layer for Filters=68,  3x3 kernel filter size, activation ='elu'
-    model.add(Convolution2D(64, 3, 3, activation='elu'))
-    #model.add(Dropout(0.5))
+    model.add(Conv2D(64, (3, 3), activation="elu"))
+    
     #Flatten 
     model.add(Flatten())
     #Dense layer size 100 , activation ='elu'
@@ -147,14 +137,14 @@ def batch_generator (image_paths, steering, batch_size, in_training):
             else:
                 img = mpimg.imread(image_paths[random_number])
                 angle = steering[random_number]
-                
+            #process image before batch generation    
             img = img_preprocess(img)
             batch_images.append(img)
             batch_steerings.append(angle)
         yield (np.asarray(batch_images), np.asarray(batch_steerings))
 
+#read data from CSV
 image_paths,steering = load_image_steering_data("data/IMG/", data)
-
 #Test and validation split of data
 X_train, X_valid, Y_train, Y_valid = train_test_split(image_paths, steering, test_size=0.2, random_state=6)
 print(X_train.shape)
@@ -170,3 +160,13 @@ history = model.fit_generator(batch_generator(X_train, Y_train, 100, True),
                                   verbose=1,
                                   shuffle=1)
 model.save('model.h5')
+print(history.history.keys())
+
+### plot the training and validation loss for each epoch
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('model mean squared error loss')
+plt.ylabel('mean squared error loss')
+plt.xlabel('epoch')
+plt.legend(['training set', 'validation set'], loc='upper right')
+plt.show()

@@ -48,6 +48,7 @@ controller = SimplePIController(0.1, 0.002)
 set_speed = 10
 controller.set_desired(set_speed)
 
+#Apply same image processing function on test data
 def img_preprocess(img):
         img = img[60:135,:,:]
         img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
