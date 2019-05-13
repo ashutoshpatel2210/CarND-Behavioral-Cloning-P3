@@ -26,9 +26,6 @@ The goals / steps of this project are the following:
 [image6]: ./examples/placeholder_small.png "Normal Image"
 [image7]: ./examples/placeholder_small.png "Flipped Image"
 
-## Rubric Points
-### Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/432/view) individually and describe how I addressed each point in my implementation.  
-
 ---
 ### Files Submitted & Code Quality
 
@@ -38,7 +35,9 @@ My project includes the following files:
 * model.py containing the script to create and train the model
 * drive.py for driving the car in autonomous mode
 * model.h5 containing a trained convolution neural network 
-* writeup_report.md or writeup_report.pdf summarizing the results
+* writeup_report.md or summarizing the results
+* video.mp4 A video recording of vehicle driving autonomously 2 laps around the track.
+
 
 #### 2. Submission includes functional code
 Using the Udacity provided simulator and my drive.py file, the car can be driven autonomously around the track by executing 
@@ -54,23 +53,60 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model consists of a convolution neural network with 3x3 filter sizes and depths between 32 and 128 (model.py lines 18-24) 
-
-The model includes RELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using a Keras lambda layer (code line 18). 
+My model consists of a convolution neural network with 5 x 5 and 3x3 filter sizes and depths between 24 and 64 (model.py lines 89-120) 
+```python
+    model=Sequential()
+    #Convolution layer for Input size = 66x200x3 , Filters=24,  5x5 kernel filter size, activation ='elu'
+    model.add(Conv2D(24, (5, 5), activation="elu", strides=(2, 2), input_shape=(66, 200, 3)))
+    #Convolution layer for Filters=36,  5x5 kernel filter size, activation ='elu'
+    model.add(Conv2D(36, (5, 5), activation="elu", strides=(2, 2)))
+    #Convolution layer for Filters=48,  5x5 kernel filter size, activation ='elu'
+    model.add(Conv2D(48, (5, 5), activation="elu", strides=(2, 2)))
+    #Convolution layer for Filters=68,  3x3 kernel filter size, activation ='elu'
+    model.add(Conv2D(64, (3, 3), activation="elu"))
+    #Convolution layer for Filters=68,  3x3 kernel filter size, activation ='elu'
+    model.add(Conv2D(64, (3, 3), activation="elu"))
+    
+    #Flatten 
+    model.add(Flatten())
+    #Dense layer size 100 , activation ='elu'
+    model.add(Dense(100, activation = 'elu'))
+    #Dense layer size 50 , activation ='elu'
+    
+    model.add(Dense(50, activation = 'elu'))
+    
+    #Dense layer size 10 , activation ='elu'
+    model.add(Dense(10, activation = 'elu'))
+    
+    #Dense layer size 1 , activation ='elu'
+    model.add(Dense(1))
+    #Adam optimizer learning rate = 0.0001
+    optimizer = Adam(lr=0.0001)
+    #Loss function mse
+    model.compile(loss='mse', optimizer=optimizer)
+```
+The model includes ELU layers to introduce nonlinearity (code line 20), and the data is normalized in the model using image processing function (code line 69-75). 
 
 #### 2. Attempts to reduce overfitting in the model
 
-The model contains dropout layers in order to reduce overfitting (model.py lines 21). 
-
-The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 10-16). The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
-
+The model was trained and validated on different data sets to ensure that the model was not overfitting (code line 134-136). For 50% images , The model was tested by running it through the simulator and ensuring that the vehicle could stay on the track.
+```python
+'''
+Apply data augmentation technique to training data
+'''
+def training_images(image, steering):
+    #Flip remaining 50% of images
+    image = cv2.flip(image, 1)
+    steering = -steering 
+    return image, steering
+```
 #### 3. Model parameter tuning
 
-The model used an adam optimizer, so the learning rate was not tuned manually (model.py line 25).
+The model used an adam optimizer with learning rate 0.0001, so the learning rate was reduce from 0.001 t0 0.0001 to reduce loss. (model.py line 116).
 
 #### 4. Appropriate training data
 
-Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road ... 
+Training data was chosen to keep the vehicle driving on the road. I used a combination of center lane driving, recovering from the left and right sides of the road and flip images 
 
 For details about how I created the training data, see the next section. 
 
